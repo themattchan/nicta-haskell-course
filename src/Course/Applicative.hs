@@ -40,7 +40,7 @@ class Functor f => Applicative f where
   pure ::
     a -> f a
   (<*>) ::
-    f (a -> b)
+       f (a -> b)
     -> f a
     -> f b
 
@@ -90,13 +90,11 @@ instance Applicative Id where
 -- >>> (+1) :. (*2) :. Nil <*> 1 :. 2 :. 3 :. Nil
 -- [2,3,4,2,4,6]
 instance Applicative List where
-  pure ::
-    a
-    -> List a
-  pure =
-    (:. Nil)
+  pure :: a -> List a
+  pure = (:. Nil)
+
   (<*>) ::
-    List (a -> b)
+       List (a -> b)
     -> List a
     -> List b
   Nil <*> _ = Nil
@@ -119,10 +117,10 @@ instance Applicative Optional where
   pure ::
     a
     -> Optional a
-  pure =
-    error "todo: Course.Applicative pure#instance Optional"
+  pure = Full
+
   (<*>) ::
-    Optional (a -> b)
+       Optional (a -> b)
     -> Optional a
     -> Optional b
   (Full f) <*> (Full x) = Full $ f x
@@ -331,7 +329,7 @@ sequence ::
   -> f (List a)
 sequence Nil = pure Nil
 sequence (f:.fs) = -- pure (:.) <*> f <*> sequence fs
-  lift2 (:.) f (sequence fs)
+  lift2 (:.) f (sequence fs)  --- wtf is this magic
 
 -- | Replicate an effect a given number of times.
 --
@@ -354,8 +352,7 @@ replicateA ::
   Int
   -> f a
   -> f (List a)
-replicateA =
-  error "todo: Course.Applicative#replicateA"
+replicateA n = sequence . replicate n
 
 -- | Filter a list with a predicate that produces an effect.
 --
@@ -382,8 +379,17 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering =
-  error "todo: Course.Applicative#filtering"
+-- Lift the normal filter up to Applicatives
+-- filter p xs = foldr (\x a -> if p x then x : a else a) [] xs
+-- at each step, foldRight returns a NEW f (List a)
+filtering p xs = foldRight (\x       -- a
+                             a ->    -- f (List a)
+                              lift2  -- Bool -> List a -> List a
+                                    (\b a' -> if b then x:.a' else a')
+                                    (p x) -- f Bool
+                                    a)    -- f (List a)
+                           (pure Nil)   -- f (List a)
+                           xs           -- List a
 
 -----------------------
 -- SUPPORT LIBRARIES --

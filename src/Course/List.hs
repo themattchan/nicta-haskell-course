@@ -137,8 +137,10 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter _ Nil =
-  error "todo: Course.List#filter"
+filter _ Nil = Nil
+filter p (x:.xs) | p x       = x :. filter p xs
+                 | otherwise = filter p xs
+
 
 -- | Append two lists to a new list.
 --
@@ -304,8 +306,7 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce =
-  error "todo: Course.List#produce"
+produce f seed = seed :. produce f (f seed)
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?

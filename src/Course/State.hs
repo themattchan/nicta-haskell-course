@@ -39,8 +39,11 @@ instance Functor (State s) where
     (a -> b)
     -> State s a
     -> State s b
-  (<$>) =
-      error "todo: Course.State#(<$>)"
+  (<$>) f st = State $ \s ->
+    let (a,s1) = runState st s in
+    (f a, s1)
+
+
 
 -- | Implement the `Applicative` instance for `State s`.
 --
@@ -57,14 +60,17 @@ instance Applicative (State s) where
   pure ::
     a
     -> State s a
-  pure =
-    error "todo: Course.State pure#instance (State s)"
+  pure a = State $ \s -> (a,s)
+
   (<*>) ::
-    State s (a -> b)
+       State s (a -> b)
     -> State s a
-    -> State s b 
-  (<*>) =
-    error "todo: Course.State (<*>)#instance (State s)"
+    -> State s b
+  (<*>) sf sa = State $ \s ->
+    let (f, s1) = runState sf s
+        (a, s2) = runState sa s1 in
+    (f a, s2)
+
 
 -- | Implement the `Bind` instance for `State s`.
 --
@@ -78,8 +84,11 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  (=<<) =
-    error "todo: Course.State (=<<)#instance (State s)"
+  f =<< st = State $ \s ->
+    let (a,s1) = runState st s
+        st' = f a in
+    runState st' s1
+
 
 -- | Run the `State` seeded with `s` and retrieve the resulting state.
 --
@@ -88,8 +97,8 @@ exec ::
   State s a
   -> s
   -> s
-exec =
-  error "todo: Course.State#exec"
+exec st i = let (_,s) = runState st i in s
+
 
 -- | Run the `State` seeded with `s` and retrieve the resulting value.
 --
@@ -98,8 +107,8 @@ eval ::
   State s a
   -> s
   -> a
-eval =
-  error "todo: Course.State#eval"
+eval st i = let (v,_) = runState st i in v
+
 
 -- | A `State` where the state also distributes into the produced value.
 --
@@ -107,8 +116,7 @@ eval =
 -- (0,0)
 get ::
   State s s
-get =
-  error "todo: Course.State#get"
+get = State $ \s -> (s,s)
 
 -- | A `State` where the resulting state is seeded with the given value.
 --
@@ -117,8 +125,8 @@ get =
 put ::
   s
   -> State s ()
-put =
-  error "todo: Course.State#put"
+put is = State $ \_ -> ((),is)
+
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.

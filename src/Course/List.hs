@@ -85,8 +85,9 @@ headOr _ (h:._) = h
 -- >>> product (1 :. 2 :. 3 :. 4 :. Nil)
 -- 24
 product :: List Int -> Int
-product Nil     = 1
-product (i:.is) = i * product is
+product = foldRight (*) 1
+-- product Nil     = 1
+-- product (i:.is) = i * product is
 
 -- | Sum the elements of the list.
 --
@@ -98,8 +99,9 @@ product (i:.is) = i * product is
 --
 -- prop> foldLeft (-) (sum x) x == 0
 sum :: List Int -> Int
-sum Nil     = 0
-sum (i:.is) = i + sum is
+sum = foldRight (+) 0
+-- sum Nil     = 0
+-- sum (i:.is) = i + sum is
 
 -- | Return the length of the list.
 --
@@ -108,8 +110,9 @@ sum (i:.is) = i + sum is
 --
 -- prop> sum (map (const 1) x) == length x
 length :: List a -> Int
-length Nil = 0
-length (_:.xs) = 1 + length xs
+length = foldRight (const (+1)) 0
+-- length Nil = 0
+-- length (_:.xs) = 1 + length xs
 
 -- | Map the given function on each element of the list.
 --
@@ -120,8 +123,10 @@ length (_:.xs) = 1 + length xs
 --
 -- prop> map id x == x
 map :: (a -> b) -> List a -> List b
-map _ Nil     = Nil
-map f (x:.xs) = f x :. map f xs
+map f = foldRight g Nil
+  where g x = (f x :.)
+-- map _ Nil     = Nil
+-- map f (x:.xs) = f x :. map f xs
 
 -- | Return elements satisfying the given predicate.
 --
@@ -137,9 +142,12 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter _ Nil = Nil
-filter p (x:.xs) | p x       = x :. filter p xs
-                 | otherwise = filter p xs
+filter p = foldRight f Nil
+  where f x | p x       = (x :.)
+            | otherwise = id
+-- filter _ Nil = Nil
+-- filter p (x:.xs) | p x       = x :. filter p xs
+--                  | otherwise = filter p xs
 
 
 -- | Append two lists to a new list.
@@ -177,8 +185,9 @@ infixr 5 ++
 flatten ::
   List (List a)
   -> List a
-flatten Nil     = Nil
-flatten (x:.xs) = x ++ flatten xs
+flatten = foldRight (++) Nil
+-- flatten Nil     = Nil
+-- flatten (x:.xs) = x ++ flatten xs
 
 
 -- | Map a function then flatten to a list.

@@ -3,12 +3,12 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RebindableSyntax #-}
 
-module Course.Monad(
-  Monad(..)
-, join
-, (>>=)
-, (<=<)
-) where
+module Course.Monad (
+    Monad(..)
+  , join
+  , (>>=)
+  , (<=<)
+  ) where
 
 import Course.Applicative hiding ((<*>))
 import Course.Core
@@ -72,8 +72,10 @@ infixr 1 =<<
   f (a -> b)
   -> f a
   -> f b
-mf <*> ma = error "wtf is this"
-
+mf <*> ma = do
+  f <- mf        -- think of these binds as "get"
+  a <- ma
+  return $ f a   -- and the return as "inject"
 
 infixl 4 <*>
 

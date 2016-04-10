@@ -147,7 +147,7 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM =
+findM f xs =
   error "todo: Course.State#findM"
 
 -- | Find the first element in a `List` that repeats.

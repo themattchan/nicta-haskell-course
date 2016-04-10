@@ -72,18 +72,17 @@ run ::
   Chars
   -> IO ()
 run f =
-  (pure lines <*> readFile f) >>= getFiles >>= printFiles
+  (lines <$> readFile f) >>= getFiles >>= printFiles
 
 getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
-getFiles =
-  sequence . map getFile
+getFiles = sequence . map getFile
 
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
-getFile fp = pure (,) <*> pure fp <*> readFile fp
+getFile fp = (,) fp <$> readFile fp
 
 
 printFiles ::

@@ -93,20 +93,14 @@ instance Monad (State s) where
 -- | Run the `State` seeded with `s` and retrieve the resulting state.
 --
 -- prop> \(Fun _ f) -> exec (State f) s == snd (runState (State f) s)
-exec ::
-  State s a
-  -> s
-  -> s
+exec :: State s a -> s -> s
 exec st i = let (_,s) = runState st i in s
 
 
 -- | Run the `State` seeded with `s` and retrieve the resulting value.
 --
 -- prop> \(Fun _ f) -> eval (State f) s == fst (runState (State f) s)
-eval ::
-  State s a
-  -> s
-  -> a
+eval :: State s a -> s -> a
 eval st i = let (v,_) = runState st i in v
 
 
@@ -114,17 +108,14 @@ eval st i = let (v,_) = runState st i in v
 --
 -- >>> runState get 0
 -- (0,0)
-get ::
-  State s s
+get :: State s s
 get = State $ \s -> (s,s)
 
 -- | A `State` where the resulting state is seeded with the given value.
 --
 -- >>> runState (put 1) 0
 -- ((),1)
-put ::
-  s
-  -> State s ()
+put :: s -> State s ()
 put is = State $ \_ -> ((),is)
 
 
@@ -147,8 +138,11 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM f xs =
-  error "todo: Course.State#findM"
+findM _ Nil     = return Empty
+findM f (x:.xs) = f x >>= \b ->
+  if b
+    then return (Full x)
+    else findM f xs
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
@@ -157,12 +151,15 @@ findM f xs =
 --
 -- prop> case firstRepeat xs of Empty -> let xs' = hlist xs in nub xs' == xs'; Full x -> length (filter (== x) xs) > 1
 -- prop> case firstRepeat xs of Empty -> True; Full x -> let (l, (rx :. rs)) = span (/= x) xs in let (l2, r2) = span (/= x) rs in let l3 = hlist (l ++ (rx :. Nil) ++ l2) in nub l3 == l3
+
+-- Use arrow combinators: https://groups.google.com/forum/#!topic/haskell-exercises/Z1uoAVE5rvU
 firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat =
-  error "todo: Course.State#firstRepeat"
+firstRepeat = flip eval S.empty . findM p
+  where p x = State $ \s -> (x `S.member` s, x `S.insert` s)
+
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -172,10 +169,10 @@ firstRepeat =
 -- prop> distinct xs == distinct (flatMap (\x -> x :. x :. Nil) xs)
 distinct ::
   Ord a =>
-  List a
+     List a
   -> List a
-distinct =
-  error "todo: Course.State#distinct"
+distinct = flip eval S.empty . filtering p
+  where p x = State $ \s -> (x `S.notMember` s, x `S.insert` s)
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
@@ -198,8 +195,6 @@ distinct =
 --
 -- >>> isHappy 44
 -- True
-isHappy ::
-  Integer
-  -> Bool
-isHappy =
-  error "todo: Course.State#isHappy"
+isHappy :: Integer -> Bool
+isHappy = contains 1 . firstRepeat . produce sumSqDigits
+  where sumSqDigits = P.sum . P.map ((P.^2) . toInteger . digitToInt) . P.show

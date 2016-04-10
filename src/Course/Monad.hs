@@ -160,7 +160,8 @@ join m = id =<< m
   f a
   -> (a -> f b)
   -> f b
-(>>=) = flip (=<<)
+--(>>=) = flip (=<<)
+(>>=) m f = join $ f <$> m
 
 infixl 1 >>=
 

@@ -275,11 +275,10 @@ lift4 f a b c d = pure f <*> a <*> b <*> c <*> d -- is there a nicer way than th
 -- prop> Full x *> Full y == Full y
 (*>) ::
   Applicative f =>
-  f a
+     f a
   -> f b
   -> f b
-(*>) = const id  -- \x . (\y . y)
-                 -- prove by calculation that this is the same as lift2 (const id)
+(*>) = lift2 $ const id  -- \x -> (\y -> y)
 
 
 -- | Apply, discarding the value of the second argument.
@@ -302,10 +301,10 @@ lift4 f a b c d = pure f <*> a <*> b <*> c <*> d -- is there a nicer way than th
 -- prop> Full x <* Full y == Full x
 (<*) ::
   Applicative f =>
-  f b
+     f b
   -> f a
   -> f b
-(<*) = const
+(<*) = lift2 const
 
 -- | Sequences a list of structures to a structure of list.
 --

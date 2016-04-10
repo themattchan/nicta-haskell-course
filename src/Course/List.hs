@@ -320,7 +320,7 @@ produce f seed = seed :. produce f (f seed)
 notReverse ::
   List a
   -> List a
-notReverse = id
+notReverse = reverse  -- impossible for any other function to fulfill props
 
 
 ---- End of list exercises

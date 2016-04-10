@@ -16,7 +16,7 @@ main ::
 main =
   getSources >>= \sources ->
     forM_ (preferredOrderFirst sources) $ \source -> do
-      hPutStrLn stderr $ "Testing " <> source
+      hPutStrLn stdout $ "Testing " <> source
       doctest $
           "-isrc"
         : "-idist/build/autogen"
@@ -35,32 +35,32 @@ sourceDirectories =
 preferredOrderFirst :: [FilePath] -> [FilePath]
 preferredOrderFirst sources =
      filter (`elem`    sources       ) preferredOrder
-  <> filter (`notElem` preferredOrder) sources
+     <> filter (`notElem` preferredOrder) sources
 
 -- If you find the tests are running slowly.
 -- Comment out the Modules you have completed
 -- in the list below.
 preferredOrder :: [String]
 preferredOrder = map (\f -> "src/Course" </> f <.> "hs") [
-      "List"
+    --   "List"
     -- , "Functor"
-    -- , "Applicative"
-    -- , "Monad"
-    -- , "FileIO"
-    -- , "State"
-    -- , "StateT"
-    -- , "Extend"
-    -- , "Comonad"
-    -- , "Compose"
-    -- , "Traversable"
-    -- , "ListZipper"
-    -- , "Parser"
-    -- , "MoreParser"
-    -- , "JsonParser"
-    -- , "Interactive"
-    -- , "Anagrams"
-    -- , "FastAnagrams"
-    -- , "Cheque"
+     "Applicative"
+    , "Monad"
+    , "FileIO"
+    , "State"
+    , "StateT"
+    , "Extend"
+    , "Comonad"
+    , "Compose"
+    , "Traversable"
+    , "ListZipper"
+    , "Parser"
+    , "MoreParser"
+    , "JsonParser"
+    , "Interactive"
+    , "Anagrams"
+    , "FastAnagrams"
+    , "Cheque"
     ]
 
 isSourceFile ::

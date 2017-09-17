@@ -32,8 +32,11 @@ anagrams ::
   Chars
   -> Filename
   -> IO (List Chars)
-anagrams w fname = error "undefined"
-  where fwords = lines <$> readFile fname
+anagrams w fname =
+  intersectBy equalIgnoringCase (permutations w) <$> fwords
+  where
+    fwords :: IO (List Chars)
+    fwords = lines <$> readFile fname
 
 
 -- Compare two strings for equality, ignoring case
@@ -41,6 +44,4 @@ equalIgnoringCase ::
   Chars
   -> Chars
   -> Bool
-equalIgnoringCase as bs =
-  lower as == lower bs
-  where lower = map toLower
+equalIgnoringCase = (==) `on` (map toLower)

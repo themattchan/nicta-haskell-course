@@ -41,19 +41,19 @@ preferredOrderFirst sources =
 -- Comment out the Modules you have completed
 -- in the list below.
 preferredOrder :: [String]
-preferredOrder = map (\f -> "src/Course" </> f <.> "hs") [
-    --   "List"
-    -- , "Functor"
-     "Applicative"
+preferredOrder = map (("src/Course" </>) . ( <.> "hs")) [
+      "List"
+    , "Functor"
+    , "Applicative"
     , "Monad"
-    , "FileIO"
-    , "State"
-    , "StateT"
-    , "Extend"
-    , "Comonad"
-    , "Compose"
-    , "Traversable"
-    , "ListZipper"
+    -- , "FileIO"
+    -- , "State"
+    -- , "StateT"
+    -- , "Extend"
+    -- , "Comonad"
+    -- , "Compose"
+    -- , "Traversable"
+--    , "ListZipper"
     , "Parser"
     , "MoreParser"
     , "JsonParser"

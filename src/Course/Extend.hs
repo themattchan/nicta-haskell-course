@@ -51,7 +51,7 @@ instance Extend List where
     (List a -> b)
     -> List a
     -> List b
-  f <<= Nil        = Nil
+  _ <<= Nil        = Nil
   f <<= xs@(_:.ts) = f xs :. (f <<= ts)
 
 

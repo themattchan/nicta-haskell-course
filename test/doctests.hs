@@ -41,7 +41,7 @@ preferredOrderFirst sources =
 -- Comment out the Modules you have completed
 -- in the list below.
 preferredOrder :: [String]
-preferredOrder = map (("src/Course" </>) . ( <.> "hs")) [
+preferredOrder = map (("src/Course" </>) . (<.> "hs")) [
       "List"
     , "Functor"
     , "Applicative"

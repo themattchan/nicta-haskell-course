@@ -46,7 +46,7 @@ data ParseResult a =
 
 instance Functor ParseResult where
   f <$> Result i x = Result i (f x)
-  f <$> ErrorResult e = ErrorResult e
+  _ <$> ErrorResult e = ErrorResult e
 
 instance Show a => Show (ParseResult a) where
   show (ErrorResult e) =
@@ -260,10 +260,7 @@ list p =
 list1 ::
   Parser a
   -> Parser (List a)
-list1 p =
-  flbindParser p $ \a ->
-  flbindParser (list p) $ \as ->
-  valueParser (a :. as)
+list1 p = lift2 (:.) p (list p)
 
 -- | Return a parser that produces a character but fails if
 --

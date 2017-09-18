@@ -53,5 +53,6 @@ chatCommand z =
 process ::
   ChatCommand
   -> Chat ()
-process =
-  error "todo"
+process (Chat s) = undefined
+process Incr = incr *> return ()
+process (Unknown s) = return ()

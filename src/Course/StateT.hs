@@ -183,8 +183,13 @@ distinct' ::
   (Ord a, Num a) =>
   List a
   -> List a
-distinct' =
-  error "todo: Course.StateT#distinct'"
+distinct' = flip eval' S.empty . filtering p
+  where
+    p x = do
+      s <- getT
+      let new = not $ S.member x s
+      putT $ S.insert x s
+      pure new
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
@@ -201,8 +206,14 @@ distinctF ::
   (Ord a, Num a) =>
   List a
   -> Optional (List a)
-distinctF =
-  error "todo: Course.StateT#distinctF"
+distinctF = flip evalT S.empty . filtering p
+  where
+    p x | x > 100 = StateT $ \_ -> Empty
+        | otherwise = do
+            s <- getT
+            let new = not $ S.member x s
+            putT $ S.insert x s
+            pure new
 
 -- | An `OptionalT` is a functor of an `Optional` value.
 data OptionalT f a =
@@ -216,26 +227,29 @@ data OptionalT f a =
 -- >>> runOptionalT $ (+1) <$> OptionalT (Full 1 :. Empty :. Nil)
 -- [Full 2,Empty]
 instance Functor f => Functor (OptionalT f) where
-  (<$>) =
-    error "todo: Course.StateT (<$>)#instance (OptionalT f)"
+  (<$>) f = OptionalT . ((f <$>) <$>) . runOptionalT
+
 
 -- | Implement the `Applicative` instance for `OptionalT f` given a Applicative f.
 --
 -- >>> runOptionalT $ OptionalT (Full (+1) :. Full (+2) :. Nil) <*> OptionalT (Full 1 :. Empty :. Nil)
 -- [Full 2,Empty,Full 3,Empty]
 instance Applicative f => Applicative (OptionalT f) where
-  pure =
-    error "todo: Course.StateT pure#instance (OptionalT f)"
-  (<*>) =
-    error "todo: Course.StateT (<*>)#instance (OptionalT f)"
+  pure = OptionalT . pure . pure
+
+  -- how can you pointfree this? `on` doesn't seem to work :(
+  OptionalT fa <*> OptionalT fb = OptionalT $ lift2 (<*>) fa fb
+
 
 -- | Implement the `Monad` instance for `OptionalT f` given a Monad f.
 --
 -- >>> runOptionalT $ (\a -> OptionalT (Full (a+1) :. Full (a+2) :. Nil)) =<< OptionalT (Full 1 :. Empty :. Nil)
 -- [Full 2,Full 3,Empty]
 instance Monad f => Monad (OptionalT f) where
-  (=<<) =
-    error "todo: Course.StateT (=<<)#instance (OptionalT f)"
+  k =<< oa = OptionalT $ runOptionalT oa >>= \a ->
+    case a of
+      Empty -> pure Empty
+      Full a' -> runOptionalT $ k a'
 
 -- | A `Logger` is a pair of a list of log values (`[l]`) and an arbitrary value (`a`).
 data Logger l a =
@@ -247,8 +261,7 @@ data Logger l a =
 -- >>> (+3) <$> Logger (listh [1,2]) 3
 -- Logger [1,2] 6
 instance Functor (Logger l) where
-  (<$>) =
-    error "todo: Course.StateT (<$>)#instance (Logger l)"
+  f <$> Logger log a = Logger log (f a)
 
 -- | Implement the `Applicative` instance for `Logger`.
 --
@@ -258,10 +271,9 @@ instance Functor (Logger l) where
 -- >>> Logger (listh [1,2]) (+7) <*> Logger (listh [3,4]) 3
 -- Logger [1,2,3,4] 10
 instance Applicative (Logger l) where
-  pure =
-    error "todo: Course.StateT pure#instance (Logger l)"
-  (<*>) =
-    error "todo: Course.StateT (<*>)#instance (Logger l)"
+  pure = Logger Nil
+
+  Logger l1 f <*> Logger l2 a = Logger (l1 ++ l2) (f a)
 
 -- | Implement the `Monad` instance for `Logger`.
 -- The `bind` implementation must append log values to maintain associativity.
@@ -269,8 +281,9 @@ instance Applicative (Logger l) where
 -- >>> (\a -> Logger (listh [4,5]) (a+3)) =<< Logger (listh [1,2]) 3
 -- Logger [1,2,4,5] 6
 instance Monad (Logger l) where
-  (=<<) =
-    error "todo: Course.StateT (=<<)#instance (Logger l)"
+  lk =<< (Logger l1 a) =
+    let Logger l2 b = lk a
+    in Logger (l1 ++ l2) b
 
 -- | A utility function for producing a `Logger` with one log value.
 --
@@ -280,8 +293,8 @@ log1 ::
   l
   -> a
   -> Logger l a
-log1 =
-  error "todo: Course.StateT#log1"
+log1 l a = Logger (l :. Nil) a
+
 
 -- | Remove all duplicate integers from a list. Produce a log as you go.
 -- If there is an element above 100, then abort the entire computation and produce no result.
@@ -301,5 +314,11 @@ distinctG ::
   (Integral a, Show a) =>
   List a
   -> Logger Chars (Optional (List a))
-distinctG =
-  error "todo: Course.StateT#distinctG"
+distinctG = undefined-- flip evalT S.empty . filtering p
+  -- where
+  --   p x | x > 100 = StateT $ \_ -> Empty
+  --       | otherwise = do
+  --           s <- getT
+  --           let new = not $ S.member x s
+  --           putT $ S.insert x s
+  --           pure new

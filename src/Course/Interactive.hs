@@ -146,7 +146,8 @@ encodeInteractive ::
 encodeInteractive = do
   putStrLn "Enter a string to encode as a url"
   s <- getLine
-  putStrLn $ strconcat $  encode <$> s
+  traverse putStr $  encode <$> s
+  putStr  "\n"
   where
     encode ' ' = "%20"
     encode '\t' = "%09"
